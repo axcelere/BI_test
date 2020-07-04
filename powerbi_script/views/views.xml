@@ -1,0 +1,35 @@
+<odoo>
+	<record model="ir.ui.view" id="res_config_settings_view_form_inherited">
+        <field name="name">ResConfigSettingsInherited</field>
+        <field name="model">res.config.settings</field>
+		<field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+				<div class="app_settings_block" data-string="PowerBI Tool" string="PowerBI Tool" data-key="powerbi_script">
+					<h2>Power BI Setting</h2>
+					<group>
+						<div class="row mt16 o_settings_container">
+							<div class="o_setting_left_pane">
+								<span class="o_form_label">Database URL/Endpoint</span>
+								<field name="db_host" groups="base.group_user"/>
+								<span class="o_form_label">Database username</span>
+								<field name="db_user_name" groups="base.group_user"/>
+								<span class="o_form_label">Database password</span>
+								<field name="db_password" groups="base.group_user"/>
+								<span class="o_form_label">Database instance name</span>
+								<field name="db_name" groups="base.group_user"/>
+								<span class="o_form_label">Database Port</span>
+								<field name="db_port" groups="base.group_user"/>
+								<span class="o_form_label">Upload file</span>
+								<field name="file_name" invisible="1"/>
+								<field name="file" groups="base.group_user" filename="file_name"/>
+								<button name="run_script" string="Start" type="object"/>
+							</div>
+						</div>
+					</group>
+				</div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
