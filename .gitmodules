@@ -2,3 +2,8 @@
 	path = piyush97ps/powerbi_script
 	url = git@github.com:piyush97ps/powerbi_script.git
 	branch = 13.0
+
+[submodule "piyush97ps/powerbiscript"]
+	path = piyush97ps/powerbiscript
+	url = git@github.com:piyush97ps/powerbi_script.git
+	branch = 13.0
