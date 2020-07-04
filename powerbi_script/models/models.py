@@ -61,6 +61,7 @@ class ResConfigSettingsInherited(models.TransientModel):
 
 
     def set_values(self):
+        print(self.db_name,self.db_user_name,self.db_password,self.db_host,self.db_port)
         res = super(ResConfigSettingsInherited, self).set_values()
         ICPSudo = self.env['ir.config_parameter'].sudo()
 
