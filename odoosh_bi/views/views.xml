@@ -13,7 +13,7 @@
           <field name="db_name"/>
           <field name="db_port"/>
           <field name="db_file" filename="db_filename"/>
-          <field name="db_filename" invisible="1"/>
+          <!-- <field name="db_filename" invisible="1"/> -->
           <button name="run_script" string="Start" type="object" class="oe_highlight"/>
         </tree>
       </field>
