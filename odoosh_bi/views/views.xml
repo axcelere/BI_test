@@ -47,11 +47,12 @@
 
     <!-- Top menu item -->
 
-    <menuitem name="odoosh_bi" id="odoosh_bi.menu_root"/>
+    <!-- <menuitem name="odoosh_bi" id="odoosh_bi.menu_root"/> -->
+    <menuitem name="BI Connector Script" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
 
     <!-- menu categories -->
 
-    <menuitem name="Odoo Sh Bi" id="odoosh_bi.odoosh_bi" parent="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
+    <!-- <menuitem name="Odoo Sh Bi" id="odoosh_bi.odoosh_bi" parent="odoosh_bi.menu_root" action="odoosh_bi.action_window"/> -->
     <!-- <menuitem name="Menu 2" id="odoosh_bi.menu_2" parent="odoosh_bi.menu_root"/> -->
 
     <!-- actions -->
