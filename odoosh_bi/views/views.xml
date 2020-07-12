@@ -8,13 +8,15 @@
       <field name="arch" type="xml">
         <tree>
           <field name="db_host"/>
+
           <field name="db_user_name"/>
           <field name="db_password"/>
           <field name="db_name"/>
           <field name="db_port"/>
           <field name="db_file" filename="db_filename"/>
-          <!-- <field name="db_filename" invisible="1"/> -->
           <button name="run_script" string="Start" type="object" class="oe_highlight"/>
+          <field name="last_updated_RDS"/>
+          <field name="Logs"/>
         </tree>
       </field>
     </record>
@@ -44,23 +46,7 @@
       </field>
     </record>
 
+    <menuitem name="odoosh_bi" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
 
-    <!-- Top menu item -->
-
-    <!-- <menuitem name="odoosh_bi" id="odoosh_bi.menu_root"/> -->
-    <menuitem name="BI Connector Script" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
-
-    <!-- menu categories -->
-
-    <!-- <menuitem name="Odoo Sh Bi" id="odoosh_bi.odoosh_bi" parent="odoosh_bi.menu_root" action="odoosh_bi.action_window"/> -->
-    <!-- <menuitem name="Menu 2" id="odoosh_bi.menu_2" parent="odoosh_bi.menu_root"/> -->
-
-    <!-- actions -->
-<!--
-    <menuitem name="List" id="odoosh_bi.menu_1_list" parent="odoosh_bi.menu_1"
-              action="odoosh_bi.action_window"/>
-    <menuitem name="Server to list" id="odoosh_bi" parent="odoosh_bi.menu_2"
-              action="odoosh_bi.action_server"/>
--->
   </data>
 </odoo>

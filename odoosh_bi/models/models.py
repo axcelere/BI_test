@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import datetime as datetime
 import psycopg2
 import base64
+import pdb
+import threading, odoo
+import datetime
 from zipfile import ZipFile
 from odoo import models, fields, api, os
 from odoo.exceptions import ValidationError, UserError, _logger
 
-import threading, odoo
 
 class odoosh_bi(models.Model):
     _name = 'odoosh_bi.odoosh_bi'
@@ -18,6 +21,40 @@ class odoosh_bi(models.Model):
     db_port = fields.Char(string='Database Port', required=True)  # 'database_to_backup_name'
     db_file = fields.Binary(string='Upload', required=True)  # 'pgDump file'
     db_filename = fields.Char(string='fileName')
+    last_updated_RDS = fields.Text(string=' last RDS update', default='Not Used Yet !!!!', readonly=True)
+    Logs = fields.Text(string='logs', default='No Logs yet !!!!', readonly=True)
+
+    @api.model
+    def checkupdate(self, vals):
+        connection = None
+        try:
+            connection = psycopg2.connect(
+                database=vals['database'],
+                user=vals['user'],
+                password=vals['password'],
+                host=vals['host'],
+                port=vals['port']
+            )
+            
+            if connection:
+                cursor = connection.cursor()
+                check_table = '''select count(*) from information_schema.tables where table_schema = 'public';'''
+                cursor.execute(check_table)
+                list_tables = cursor.fetchall()
+                # print(list_tables)
+                if (list_tables == [(0,)]):
+                    print("database is empty")
+                    connection.close()
+                    return True
+                else:
+                    print("database is not empty")
+                    connection.close()
+                    return False
+        except Exception as e:
+            print(e)
+        finally:
+            if connection:
+                connection.close()
 
 
     def _run_process(self, id):
@@ -33,7 +70,14 @@ class odoosh_bi(models.Model):
                 db_to_bak = obj.db_name
                 output = "backup_file.zip"
                 db_bak_path = ''
-                # print(db_host, user_name, db_name, port, pg_pass, db_to_bak)
+
+                val = {
+                    'database': db_name,
+                    'user': user_name,
+                    'password': pg_pass,
+                    'host': db_host,
+                    'port': port
+                }
 
                 try:
                     if os.path.exists(output):
@@ -52,27 +96,70 @@ class odoosh_bi(models.Model):
                         listOfFileNames = zipObj.namelist()
                         for fileName in listOfFileNames:
                             if fileName.endswith('.sql'):
-                                db_bak_path =  fileName
+                                db_bak_path = fileName
                                 zipObj.extract(fileName)
                                 break
-
                 except:
                     print("Zip extraction error")
                     return
 
                 try:
                     _logger.info('Restoring The Database to the RDS server')
-                    os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
-                                pg_pass, db_host, port, user_name, db_to_bak))
-                    os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
-                                pg_pass, db_host, port, user_name, db_to_bak))
-                    os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
-                                pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
-                    _logger.info('Restore Completed')
-                except Exception as e:
-                    print(e)
-                    print("Connection Error: Not connecting")
+                    now = str(datetime.datetime.now())
+                    old_log = obj.Logs
+                    obj.Logs = now + ' Restoring The Database to the RDS server \n' + old_log
 
+                    os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
+                        pg_pass, db_host, port, user_name, db_to_bak))
+
+                    os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
+                        pg_pass, db_host, port, user_name, db_to_bak))
+                    
+                    
+                    status = self.checkupdate(val)
+                    if status == True:
+                        now = str(datetime.datetime.now())
+                        obj.last_updated_RDS = now
+
+                        os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
+                            pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
+
+                        # check database empty or not if not empty upload success
+                        status = self.checkupdate(val)
+                        # status = False
+                        if status == False:
+                            _logger.info('Restore Completed')
+                            now = str(datetime.datetime.now())
+                            old_log = obj.Logs
+                            obj.Logs = now + ' Restore Completed \n' + old_log
+
+                            now = str(datetime.datetime.now())
+                            obj.last_updated_RDS = now + ' Restore Completed \n'
+                        else:
+                            # print("Some Error While Restoring Database")
+                            obj.last_updated_RDS = 'Error While Restoring Database'
+                            _logger.info("Error While Restoring Database")
+
+                            now = str(datetime.datetime.now())
+                            old_log = obj.Logs
+                            obj.Logs = now + ' Error While Restoring Database \n' + old_log
+                            return
+
+                    else:
+                        print("Database is Being Used Somewhere")
+                        obj.last_updated_RDS = "Database is Being Used Somewhere"
+                        _logger.info("Database is Being Used Somewhere")
+                        now = str(datetime.datetime.now())
+                        old_log = obj.Logs
+                        obj.Logs = now + ' Database is Being Used Somewhere \n' + old_log
+
+                except  Exception as e:
+                    print(e)
+                    obj.last_updated_RDS = "Error While Restoring Database"
+                    # print("Connection Error: Not connecting")
+                    now = str(datetime.datetime.now())
+                    old_log = obj.Logs
+                    obj.Logs = now + ' ' + e +' \n' + old_log
 
     @api.model
     def run_script(self, *args, **kwargs):
@@ -91,6 +178,7 @@ class odoosh_bi(models.Model):
                 host=vals['db_host'],
                 port=vals['db_port']
             )
+
         except Exception as e:
             print(e)
             raise ValidationError("Incorrect credentials Please check and try again")
@@ -98,7 +186,6 @@ class odoosh_bi(models.Model):
             if connection:
                 connection.close()
                 return super(odoosh_bi, self).create(vals)
-    
 
     def write(self, vals):
         print(vals, self)
@@ -113,7 +200,6 @@ class odoosh_bi(models.Model):
         }
         for i in vals:
             updated_vals[i] = vals[i]
-
         connection = None
         try:
             connection = psycopg2.connect(
