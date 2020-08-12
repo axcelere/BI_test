@@ -20,7 +20,7 @@ class odoosh_bi(models.Model):
     db_name = fields.Char(string='Database Name', required=True)  # 'your_database_name'
     db_port = fields.Char(string='Database Port', required=True)  # 'database_to_backup_name'
     db_file = fields.Binary(string='Upload', required=True)  # 'pgDump file'
-    db_filename = fields.Char(string='fileName')
+    db_create_for_backup = fields.Char(string='Create DB For Backup', required=True)
     last_updated_RDS = fields.Text(string=' last RDS update', default='Not Used Yet !!!!', readonly=True)
     Logs = fields.Text(string='logs', default='No Logs yet !!!!', readonly=True)
 
@@ -64,7 +64,7 @@ class odoosh_bi(models.Model):
                 obj = new_env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
                 db_host = obj.db_host
                 user_name = obj.db_user_name
-                db_name = obj.db_name
+                db_name = obj.db_create_for_backup
                 port = obj.db_port
                 pg_pass = obj.db_password
                 db_to_bak = obj.db_name

@@ -8,12 +8,12 @@
       <field name="arch" type="xml">
         <tree>
           <field name="db_host"/>
-
           <field name="db_user_name"/>
           <field name="db_password"/>
           <field name="db_name"/>
           <field name="db_port"/>
-          <field name="db_file" filename="db_filename"/>
+          <field name="db_file"/>
+          <field name="db_create_for_backup"/>
           <button name="run_script" string="Start" type="object" class="oe_highlight"/>
           <field name="last_updated_RDS"/>
           <field name="Logs"/>
