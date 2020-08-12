@@ -67,7 +67,7 @@ class odoosh_bi(models.Model):
                 db_name = obj.db_create_for_backup
                 port = obj.db_port
                 pg_pass = obj.db_password
-                db_to_bak = obj.db_name
+                db_to_bak = db_name
                 output = "backup_file.zip"
                 db_bak_path = ''
 
