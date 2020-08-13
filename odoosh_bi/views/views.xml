@@ -3,7 +3,7 @@
     <!-- explicit list view definition -->
 
     <record model="ir.ui.view" id="odoosh_bi.list">
-      <field name="name">odoosh_bi list</field>
+      <field name="name">BI Connector(SH)</field>
       <field name="model">odoosh_bi.odoosh_bi</field>
       <field name="arch" type="xml">
         <tree>
@@ -34,7 +34,7 @@
     <!-- server action to the one above -->
 
     <record model="ir.actions.server" id="odoosh_bi.action_server">
-      <field name="name">odoosh_bi server</field>
+      <field name="name">BI Connector(SH) server</field>
       <field name="model_id" ref="model_odoosh_bi_odoosh_bi"/>
       <field name="state">code</field>
       <field name="code">
@@ -46,7 +46,7 @@
       </field>
     </record>
 
-    <menuitem name="odoosh_bi" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
+    <menuitem name="BI Connector(SH)" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
 
   </data>
 </odoo>
