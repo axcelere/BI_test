@@ -106,7 +106,7 @@ class odoosh_bi(models.Model):
 
                 try:
                     _logger.info('Restoring The Database to the RDS server')
-                    obj.blockFlag = True
+                    # obj.blockFlag = True
                     now = str(datetime.datetime.now())
                     old_log = obj.Logs
                     obj.Logs = now + ' Restoring The Database to the RDS server \n' + old_log
@@ -162,14 +162,17 @@ class odoosh_bi(models.Model):
                     now = str(datetime.datetime.now())
                     old_log = obj.Logs
                     obj.Logs = now + ' ' + e +' \n' + old_log
-                finally:
-                    obj.blockFlag = False
+                # finally:
+                    # obj.blockFlag = False
 
 
     @api.model
     def run_script(self, *args, **kwargs):
+        obj.blockFlag = True
         obj = threading.Thread(target=self._run_process, args=(args[0][0],))
         obj.start()
+        obj.blockFlag = False
+
 
 
     @api.model
