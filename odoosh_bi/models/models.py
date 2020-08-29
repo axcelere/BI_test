@@ -18,9 +18,9 @@ class odoosh_bi(models.Model):
     db_user_name = fields.Char(string='Username', required=True)  # 'your_name'
     db_password = fields.Char(string='Password', required=True)  # 'your_db_password'
     db_name = fields.Char(string='Database Name', required=True)  # 'your_database_name'
-    db_port = fields.Char(string='Database Port', required=True)  # 'database_to_backup_name'
+    db_port = fields.Char(string='Database Port', required=True)  # 'port'
     db_file = fields.Binary(string='Upload', required=True)  # 'pgDump file'
-    db_create_for_backup = fields.Char(string='Create DB For Backup', required=True)
+    db_name_for_backup = fields.Char(string='Create DB For Backup', required=True)
     last_updated_RDS = fields.Text(string=' last RDS update', default='Not Used Yet !!!!', readonly=True)
     Logs = fields.Text(string='logs', default='No Logs yet !!!!', readonly=True)
     blockFlag = fields.Boolean(string='Block Flag', default=False)
@@ -65,7 +65,7 @@ class odoosh_bi(models.Model):
                 obj = new_env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
                 db_host = obj.db_host
                 user_name = obj.db_user_name
-                db_name = obj.db_create_for_backup
+                db_name = obj.db_name_for_backup
                 port = obj.db_port
                 pg_pass = obj.db_password
                 db_to_bak = db_name
@@ -174,9 +174,9 @@ class odoosh_bi(models.Model):
 
     @api.model
     def create(self, vals):
-        if 'db_create_for_backup' in vals:
-            vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
-            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_create_for_backup', '=', vals['db_create_for_backup'])]).ids
+        if 'db_name_for_backup' in vals:
+            vals['db_name_for_backup'] = vals['db_name_for_backup'].replace(" ", "")
+            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_name_for_backup', '=', vals['db_name_for_backup'])]).ids
             if obj:
                 raise ValidationError("Database name is not unique, already been used in other backup")
         
@@ -199,9 +199,9 @@ class odoosh_bi(models.Model):
                 return super(odoosh_bi, self).create(vals)
 
     def write(self, vals):
-        if 'db_create_for_backup' in vals:
-            vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
-            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_create_for_backup', '=', vals['db_create_for_backup'])]).ids
+        if 'db_name_for_backup' in vals:
+            vals['db_name_for_backup'] = vals['db_name_for_backup'].replace(" ", "")
+            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_name_for_backup', '=', vals['db_name_for_backup'])]).ids
             if len(obj) > 0 or (len(obj) == 1 and self.id not in obj):
                 raise ValidationError("Database name is not unique, already been used in other backup")
         print(vals, self)

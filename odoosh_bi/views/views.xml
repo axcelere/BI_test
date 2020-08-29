@@ -1,6 +1,5 @@
 <odoo>
   <data>
-    <!-- explicit list view definition -->
 
     <record model="ir.ui.view" id="odoosh_bi.list">
       <field name="name">BI Connector(SH)</field>
@@ -13,18 +12,16 @@
           <field name="db_name"/>
           <field name="db_port"/>
           <field name="db_file"/>
-          <field name="db_create_for_backup"/>
-          <button name="run_script" string="Start" type="object" class="oe_highlight"
-              attrs="{readonly':[('blockFlag', '=', True)]}"/>
+          <field name="db_name_for_backup"/>
+          <button name="run_script" string="Start" type="object" class="oe_highlight"/>
+              <!-- readonly="[('blockFlag', '=', True)]"/> -->
           <field name="last_updated_RDS"/>
           <field name="Logs"/>
-          <field name="blockFlag" attrs="{'invisible':1}" />
+          <field name="blockFlag"/>
         </tree>
       </field>
     </record>
 
-
-    <!-- actions opening views on models -->
 
     <record model="ir.actions.act_window" id="odoosh_bi.action_window">
       <field name="name">odoosh_bi window</field>
