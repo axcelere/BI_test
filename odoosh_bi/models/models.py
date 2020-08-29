@@ -176,7 +176,7 @@ class odoosh_bi(models.Model):
     def create(self, vals):
         if 'db_create_for_backup' in vals:
             vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
-            obj = self.env['odoosh_bi.odoosh_bi'].search(['db_create_for_backup', '=', vals['db_create_for_backup']]).ids
+            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_create_for_backup', '=', vals['db_create_for_backup'])]).ids
             if obj:
                 raise ValidationError("Database name is not unique, already been used in other backup")
         
@@ -201,7 +201,7 @@ class odoosh_bi(models.Model):
     def write(self, vals):
         if 'db_create_for_backup' in vals:
             vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
-            obj = self.env['odoosh_bi.odoosh_bi'].search(['db_create_for_backup', '=', vals['db_create_for_backup']]).ids
+            obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('db_create_for_backup', '=', vals['db_create_for_backup'])]).ids
             if len(obj) > 0 or (len(obj) == 1 and self.id not in obj):
                 raise ValidationError("Database name is not unique, already been used in other backup")
         print(vals, self)
