@@ -23,6 +23,7 @@ class odoosh_bi(models.Model):
     db_create_for_backup = fields.Char(string='Create DB For Backup', required=True)
     last_updated_RDS = fields.Text(string=' last RDS update', default='Not Used Yet !!!!', readonly=True)
     Logs = fields.Text(string='logs', default='No Logs yet !!!!', readonly=True)
+    blockFlag = fields.Boolean(string='Block Flag', default=False)
 
     @api.model
     def checkupdate(self, vals):
@@ -105,6 +106,7 @@ class odoosh_bi(models.Model):
 
                 try:
                     _logger.info('Restoring The Database to the RDS server')
+                    obj.blockFlag = True
                     now = str(datetime.datetime.now())
                     old_log = obj.Logs
                     obj.Logs = now + ' Restoring The Database to the RDS server \n' + old_log
@@ -160,6 +162,9 @@ class odoosh_bi(models.Model):
                     now = str(datetime.datetime.now())
                     old_log = obj.Logs
                     obj.Logs = now + ' ' + e +' \n' + old_log
+                finally:
+                    obj.blockFlag = False
+
 
     @api.model
     def run_script(self, *args, **kwargs):
@@ -169,6 +174,12 @@ class odoosh_bi(models.Model):
 
     @api.model
     def create(self, vals):
+        if 'db_create_for_backup' in vals:
+            vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
+            obj = self.env['odoosh_bi.odoosh_bi'].search(['db_create_for_backup', '=', vals['db_create_for_backup']]).ids
+            if obj:
+                raise ValidationError("Database name is not unique, already been used in other backup")
+        
         connection = None
         try:
             connection = psycopg2.connect(
@@ -188,6 +199,11 @@ class odoosh_bi(models.Model):
                 return super(odoosh_bi, self).create(vals)
 
     def write(self, vals):
+        if 'db_create_for_backup' in vals:
+            vals['db_create_for_backup'] = vals['db_create_for_backup'].replace(" ", "")
+            obj = self.env['odoosh_bi.odoosh_bi'].search(['db_create_for_backup', '=', vals['db_create_for_backup']]).ids
+            if len(obj) > 0 or (len(obj) == 1 and self.id not in obj):
+                raise ValidationError("Database name is not unique, already been used in other backup")
         print(vals, self)
         obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', self.id)])
         print(obj)

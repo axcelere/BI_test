@@ -14,7 +14,8 @@
           <field name="db_port"/>
           <field name="db_file"/>
           <field name="db_create_for_backup"/>
-          <button name="run_script" string="Start" type="object" class="oe_highlight"/>
+          <button name="run_script" string="Start" type="object" class="oe_highlight"
+              readonly="('blockFlag', '=', True)"/>
           <field name="last_updated_RDS"/>
           <field name="Logs"/>
         </tree>
