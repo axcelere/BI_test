@@ -168,10 +168,10 @@ class odoosh_bi(models.Model):
 
     @api.model
     def run_script(self, *args, **kwargs):
-        obj.blockFlag = True
+        self.blockFlag = True
         obj = threading.Thread(target=self._run_process, args=(args[0][0],))
         obj.start()
-        obj.blockFlag = False
+        self.blockFlag = False
 
 
 
