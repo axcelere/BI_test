@@ -13,8 +13,8 @@
           <field name="db_port"/>
           <field name="db_file"/>
           <field name="db_name_for_backup"/>
-          <button name="run_script" string="Start" type="object" class="oe_highlight"/>
-              <!-- readonly="[('blockFlag', '=', True)]"/> -->
+          <button name="run_script" string="Start" type="object" class="oe_highlight"
+              attrs="{'invisible':[('blockFlag','=',True)]}"/>
           <field name="last_updated_RDS"/>
           <field name="Logs"/>
           <field name="blockFlag"/>
