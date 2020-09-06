@@ -58,142 +58,79 @@ class odoosh_bi(models.Model):
                 connection.close()
 
     def _run_process(self, id):
-        # print(self.env['ir.config_parameter'])
-        # self.env['ir.config_parameter'].set_param(id, False)
-        # print(self.env['ir.config_parameter'])
-        # print(self.localcontext)
-        # print(self.localcontext.update({id: False}))
-        # print(self.localcontext)
-        with api.Environment.manage():
-            with odoo.registry(self.env.cr.dbname).cursor() as new_cr:
-                new_env = api.Environment(new_cr, self.env.uid, self.env.context)
-                obj = new_env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
-                db_host = obj.db_host
-                user_name = obj.db_user_name
-                db_name = obj.db_name_for_backup
-                port = obj.db_port
-                pg_pass = obj.db_password
-                db_to_bak = db_name
-                output = "backup_file.zip"
-                db_bak_path = ''
-                
-                val = {
-                    'database': db_name,
-                    'user': user_name,
-                    'password': pg_pass,
-                    'host': db_host,
-                    'port': port
-                }
+        obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
+        db_host = obj.db_host
+        user_name = obj.db_user_name
+        db_name = obj.db_name_for_backup
+        port = obj.db_port
+        pg_pass = obj.db_password
+        db_to_bak = db_name
+        output = "backup_file.zip"
+        db_bak_path = ''
+        
+        val = {
+            'database': db_name,
+            'user': user_name,
+            'password': pg_pass,
+            'host': db_host,
+            'port': port
+        }
 
-                try:
-                    if os.path.exists(output):
-                        os.remove(output)
+        try:
+            if os.path.exists(output):
+                os.remove(output)
 
-                    fd = base64.b64decode(obj.db_file)
-                    f = open(output, "wb")
-                    f.write(fd)
-                    f.close()
-                except Exception as e:
-                    print(e)
-                    return
+            fd = base64.b64decode(obj.db_file)
+            f = open(output, "wb")
+            f.write(fd)
+            f.close()
+        except Exception as e:
+            print(e)
+            return
 
-                try:
-                    with ZipFile(output, 'r') as zipObj:
-                        listOfFileNames = zipObj.namelist()
-                        for fileName in listOfFileNames:
-                            if fileName.endswith('.sql'):
-                                db_bak_path = fileName
-                                zipObj.extract(fileName)
-                                break
-                except:
-                    print("Zip extraction error")
-                    return
-                
-                # size = len(obj.logs)
-                # if size > 1000:
-                #     size = 1000
-                # curr_logs = str(obj.logs[0:size]) or ''
-                try:
-                    _logger.critical('Restoring The Database to the RDS server')
+        try:
+            with ZipFile(output, 'r') as zipObj:
+                listOfFileNames = zipObj.namelist()
+                for fileName in listOfFileNames:
+                    if fileName.endswith('.sql'):
+                        db_bak_path = fileName
+                        zipObj.extract(fileName)
+                        break
+        except:
+            print("Zip extraction error")
+            return
 
-                    os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
-                        pg_pass, db_host, port, user_name, db_to_bak))
+        try:
+            _logger.critical('Restoring The Database to the RDS server')
 
-                    os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
-                        pg_pass, db_host, port, user_name, db_to_bak))
-                    
-                    status = self.checkupdate(val)
-                    if status == True:
-                        os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
-                            pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
+            os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
+                pg_pass, db_host, port, user_name, db_to_bak))
 
-                        status = self.checkupdate(val)
-                        if status == False:
-                            _logger.critical('Restore Completed')
-                            # obj.write({'blockFlag': False})
-                            # obj.blockFlag = False
-                            # now = str(datetime.datetime.now())
-                            # obj.write({'last_updated_RDS': now + ' Restore Completed',
-                            # 'logs':  now + ' Restore Completed \n' + curr_logs,
-                            # 'blockFlag': False})
-                        else:
-                            _logger.critical("Error While Restoring Database")
-                            # now = str(datetime.datetime.now())
-                            # obj.write({'last_updated_RDS': now + ' Error While Restoring Database',
-                            # 'logs':  now + ' Error While Restoring Database \n' + curr_logs,
-                            # 'blockFlag': False})
-                            # obj.write({'blockFlag': False})
-                    else:
-                        _logger.critical("Database is Being Used Somewhere")
-                        # now = str(datetime.datetime.now())
-                        # curr_logs = now + ' Database is Being Used Somewhere \n' + curr_logs
-                        # obj.write({'last_updated_RDS': now + " Database is Being Used Somewhere",
-                        #     'logs':  curr_logs})
-                        # obj.write({'blockFlag': False})
-                        # obj.blockFlag = False
-                    
-                except Exception as e:
-                    _logger.critical("Error While Restoring Database", e)
-                    # now = str(datetime.datetime.now())
-                    # obj.write({'last_updated_RDS': now + ' Error While Restoring Database',
-                    #     'logs':  now + ' Error While Restoring Database \n' + curr_logs,
-                    #     'blockFlag': False})
-                    # obj.write({'blockFlag': False})
-                    # obj.blockFlag = False
+            os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
+                pg_pass, db_host, port, user_name, db_to_bak))
+            
+            status = self.checkupdate(val)
+            if status == True:
+                os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
+                    pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
+
+                status = self.checkupdate(val)
+                if status == False:
+                    _logger.critical('Restore Completed')
+                else:
+                    _logger.critical("Error While Restoring Database")
+            else:
+                _logger.critical("Database is Being Used Somewhere")
+            
+        except Exception as e:
+            _logger.critical("Error While Restoring Database", e)
 
 
     def run_script(self, *args, **kwargs):
-        # print(self.env['ir.config_parameter'])
-        # print(self.localcontext)
         id = self.id # args[0][0]
-        # self.env['ir.config_parameter'].set_param(id, True)
-        # print(self.localcontext.update({id: True}))
         obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
-        # size = len(obj.logs)
-        # if size > 1000:
-        #     size = 1000
-        # curr_logs = str(obj.logs[0:size]) or ''
         try:
-            if not obj.blockFlag:
-                now = str(datetime.datetime.now())
-                # obj.last_updated_RDS =  now + " Restoring The Database to the RDS server"
-                # obj.logs = now + ' Restoring The Database to the RDS server \n' + curr_logs
-                # obj.blockFlag = True
-                # obj.write({'blockFlag': True})
-                # curr_logs = now + ' Restoring The Database to the RDS server \n' + curr_logs
-                # self.write({'last_updated_RDS': now + " Restoring The Database to the RDS server",
-                #            'logs':  curr_logs,
-                #            'blockFlag': True})
-                obj = threading.Thread(target=self._run_process, args=(id,))
-                obj.start()
-                obj.join()
-                # now = str(datetime.datetime.now())
-                # self.write({'last_updated_RDS': now + ' Restore Completed',
-                #         'logs':  now + ' Restore Completed \n' + curr_logs,
-                #         'blockFlag': False})
-
-            else:
-                raise ValidationError("Backup script is already in progress")
+            self._run_process(id)
         except Exception as e:
             print(e)
             _logger.critical("Error While Restoring Database", e)
