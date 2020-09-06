@@ -100,21 +100,26 @@ class odoosh_bi(models.Model):
         except:
             print("Zip extraction error")
             return
-
+        _logger.critical('>>>>>>>>>>>>>>>>>', 1)
         try:
             _logger.critical('Restoring The Database to the RDS server')
+            _logger.critical('>>>>>>>>>>>>>>>>>', 2)
 
             os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
                 pg_pass, db_host, port, user_name, db_to_bak))
+            _logger.critical('>>>>>>>>>>>>>>>>>', 3)
 
             os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
                 pg_pass, db_host, port, user_name, db_to_bak))
+            _logger.critical('>>>>>>>>>>>>>>>>>', 4)
             
             status = self.checkupdate(val)
+            _logger.critical('>>>>>>>>>>>>>>>>>', 5)
+
             if status == True:
                 os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
                     pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
-
+                _logger.critical('>>>>>>>>>>>>>>>>>', 6)
                 status = self.checkupdate(val)
                 if status == False:
                     _logger.critical('Restore Completed')
