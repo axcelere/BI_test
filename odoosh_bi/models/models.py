@@ -42,6 +42,7 @@ class odoosh_bi(models.Model):
                 check_table = '''select count(*) from information_schema.tables where table_schema = 'public';'''
                 cursor.execute(check_table)
                 list_tables = cursor.fetchall()
+                _logger.critical('>>>>>>>>>>>>>>>>>', list_tables)
                 # print(list_tables)
                 if (list_tables == [(0,)]):
                     # print("database is empty")
