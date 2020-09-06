@@ -7,22 +7,22 @@ import threading, odoo
 import datetime
 from zipfile import ZipFile
 from odoo import models, fields, api, os
-from odoo.exceptions import ValidationError, UserError, _logger
+from odoo.exceptions import ValidationError, UserError, _logger, Warning
 
 
 class odoosh_bi(models.Model):
     _name = 'odoosh_bi.odoosh_bi'
     _description = 'odoosh_bi.odoosh_bi'
 
-    db_host = fields.Char(string='Database Host Name', required=True)  # 'rds_host_url'
-    db_user_name = fields.Char(string='Username', required=True)  # 'your_name'
-    db_password = fields.Char(string='Password', required=True)  # 'your_db_password'
-    db_name = fields.Char(string='Database Name', required=True)  # 'your_database_name'
-    db_port = fields.Char(string='Database Port', required=True)  # 'port'
-    db_file = fields.Binary(string='Upload', required=True)  # 'pgDump file'
-    db_name_for_backup = fields.Char(string='Create DB For Backup', required=True)
-    last_updated_RDS = fields.Text(string=' last RDS update', default='Not Used Yet !!!!', readonly=True)
-    Logs = fields.Text(string='logs', default='No Logs yet !!!!', readonly=True)
+    db_host = fields.Char(string='Database Host Name')  # 'rds_host_url'
+    db_user_name = fields.Char(string='Username')  # 'your_name'
+    db_password = fields.Char(string='Password')  # 'your_db_password'
+    db_name = fields.Char(string='Database Name')  # 'your_database_name'
+    db_port = fields.Char(string='Database Port')  # 'port'
+    db_file = fields.Binary(string='Upload' )  # 'pgDump file'
+    db_name_for_backup = fields.Char(string='Create DB For Backup')
+    last_updated_RDS = fields.Text(string='last RDS update', default="Logs:__")
+    logs = fields.Text(string='logs', default="Logs:_")
     blockFlag = fields.Boolean(string='Block Flag', default=False)
 
     @api.model
@@ -44,11 +44,11 @@ class odoosh_bi(models.Model):
                 list_tables = cursor.fetchall()
                 # print(list_tables)
                 if (list_tables == [(0,)]):
-                    print("database is empty")
+                    # print("database is empty")
                     connection.close()
                     return True
                 else:
-                    print("database is not empty")
+                    # print("database is not empty")
                     connection.close()
                     return False
         except Exception as e:
@@ -57,8 +57,13 @@ class odoosh_bi(models.Model):
             if connection:
                 connection.close()
 
-
     def _run_process(self, id):
+        # print(self.env['ir.config_parameter'])
+        # self.env['ir.config_parameter'].set_param(id, False)
+        # print(self.env['ir.config_parameter'])
+        # print(self.localcontext)
+        # print(self.localcontext.update({id: False}))
+        # print(self.localcontext)
         with api.Environment.manage():
             with odoo.registry(self.env.cr.dbname).cursor() as new_cr:
                 new_env = api.Environment(new_cr, self.env.uid, self.env.context)
@@ -71,7 +76,7 @@ class odoosh_bi(models.Model):
                 db_to_bak = db_name
                 output = "backup_file.zip"
                 db_bak_path = ''
-
+                
                 val = {
                     'database': db_name,
                     'user': user_name,
@@ -103,13 +108,13 @@ class odoosh_bi(models.Model):
                 except:
                     print("Zip extraction error")
                     return
-
+                
+                # size = len(obj.logs)
+                # if size > 1000:
+                #     size = 1000
+                # curr_logs = str(obj.logs[0:size]) or ''
                 try:
-                    _logger.info('Restoring The Database to the RDS server')
-                    # obj.blockFlag = True
-                    now = str(datetime.datetime.now())
-                    old_log = obj.Logs
-                    obj.Logs = now + ' Restoring The Database to the RDS server \n' + old_log
+                    _logger.critical('Restoring The Database to the RDS server')
 
                     os.system('PGPASSWORD=%s dropdb --host %s --port "%s" --username %s --if-exists %s' % (
                         pg_pass, db_host, port, user_name, db_to_bak))
@@ -117,64 +122,82 @@ class odoosh_bi(models.Model):
                     os.system('PGPASSWORD=%s createdb --host %s --port "%s" --username %s %s' % (
                         pg_pass, db_host, port, user_name, db_to_bak))
                     
-                    
                     status = self.checkupdate(val)
                     if status == True:
-                        now = str(datetime.datetime.now())
-                        obj.last_updated_RDS = now
-
                         os.system('PGPASSWORD=%s psql --host %s --port "%s" --username %s -d %s -f %s' % (
                             pg_pass, db_host, port, user_name, db_to_bak, db_bak_path))
 
-                        # check database empty or not if not empty upload success
                         status = self.checkupdate(val)
-                        # status = False
                         if status == False:
-                            _logger.info('Restore Completed')
-                            now = str(datetime.datetime.now())
-                            old_log = obj.Logs
-                            obj.Logs = now + ' Restore Completed \n' + old_log
-
-                            now = str(datetime.datetime.now())
-                            obj.last_updated_RDS = now + ' Restore Completed \n'
+                            _logger.critical('Restore Completed')
+                            # obj.write({'blockFlag': False})
+                            # obj.blockFlag = False
+                            # now = str(datetime.datetime.now())
+                            # obj.write({'last_updated_RDS': now + ' Restore Completed',
+                            # 'logs':  now + ' Restore Completed \n' + curr_logs,
+                            # 'blockFlag': False})
                         else:
-                            # print("Some Error While Restoring Database")
-                            obj.last_updated_RDS = 'Error While Restoring Database'
-                            _logger.info("Error While Restoring Database")
-
-                            now = str(datetime.datetime.now())
-                            old_log = obj.Logs
-                            obj.Logs = now + ' Error While Restoring Database \n' + old_log
-                            return
-
+                            _logger.critical("Error While Restoring Database")
+                            # now = str(datetime.datetime.now())
+                            # obj.write({'last_updated_RDS': now + ' Error While Restoring Database',
+                            # 'logs':  now + ' Error While Restoring Database \n' + curr_logs,
+                            # 'blockFlag': False})
+                            # obj.write({'blockFlag': False})
                     else:
-                        print("Database is Being Used Somewhere")
-                        obj.last_updated_RDS = "Database is Being Used Somewhere"
-                        _logger.info("Database is Being Used Somewhere")
-                        now = str(datetime.datetime.now())
-                        old_log = obj.Logs
-                        obj.Logs = now + ' Database is Being Used Somewhere \n' + old_log
-
-                except  Exception as e:
-                    print(e)
-                    obj.last_updated_RDS = "Error While Restoring Database"
-                    # print("Connection Error: Not connecting")
-                    now = str(datetime.datetime.now())
-                    old_log = obj.Logs
-                    obj.Logs = now + ' ' + e +' \n' + old_log
-                # finally:
+                        _logger.critical("Database is Being Used Somewhere")
+                        # now = str(datetime.datetime.now())
+                        # curr_logs = now + ' Database is Being Used Somewhere \n' + curr_logs
+                        # obj.write({'last_updated_RDS': now + " Database is Being Used Somewhere",
+                        #     'logs':  curr_logs})
+                        # obj.write({'blockFlag': False})
+                        # obj.blockFlag = False
+                    
+                except Exception as e:
+                    _logger.critical("Error While Restoring Database", e)
+                    # now = str(datetime.datetime.now())
+                    # obj.write({'last_updated_RDS': now + ' Error While Restoring Database',
+                    #     'logs':  now + ' Error While Restoring Database \n' + curr_logs,
+                    #     'blockFlag': False})
+                    # obj.write({'blockFlag': False})
                     # obj.blockFlag = False
 
 
-    @api.model
     def run_script(self, *args, **kwargs):
-        self.blockFlag = True
-        obj = threading.Thread(target=self._run_process, args=(args[0][0],))
-        obj.start()
-        self.blockFlag = False
+        # print(self.env['ir.config_parameter'])
+        # print(self.localcontext)
+        id = self.id # args[0][0]
+        # self.env['ir.config_parameter'].set_param(id, True)
+        # print(self.localcontext.update({id: True}))
+        obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', id)])
+        # size = len(obj.logs)
+        # if size > 1000:
+        #     size = 1000
+        # curr_logs = str(obj.logs[0:size]) or ''
+        try:
+            if not obj.blockFlag:
+                now = str(datetime.datetime.now())
+                # obj.last_updated_RDS =  now + " Restoring The Database to the RDS server"
+                # obj.logs = now + ' Restoring The Database to the RDS server \n' + curr_logs
+                # obj.blockFlag = True
+                # obj.write({'blockFlag': True})
+                # curr_logs = now + ' Restoring The Database to the RDS server \n' + curr_logs
+                # self.write({'last_updated_RDS': now + " Restoring The Database to the RDS server",
+                #            'logs':  curr_logs,
+                #            'blockFlag': True})
+                obj = threading.Thread(target=self._run_process, args=(id,))
+                obj.start()
+                obj.join()
+                # now = str(datetime.datetime.now())
+                # self.write({'last_updated_RDS': now + ' Restore Completed',
+                #         'logs':  now + ' Restore Completed \n' + curr_logs,
+                #         'blockFlag': False})
 
-
-
+            else:
+                raise ValidationError("Backup script is already in progress")
+        except Exception as e:
+            print(e)
+            _logger.critical("Error While Restoring Database", e)
+        
     @api.model
     def create(self, vals):
         if 'db_name_for_backup' in vals:
@@ -199,7 +222,8 @@ class odoosh_bi(models.Model):
         finally:
             if connection:
                 connection.close()
-                return super(odoosh_bi, self).create(vals)
+        return super(odoosh_bi, self).create(vals)
+
 
     def write(self, vals):
         if 'db_name_for_backup' in vals:
@@ -209,7 +233,7 @@ class odoosh_bi(models.Model):
                 raise ValidationError("Database name is not unique, already been used in other backup")
         print(vals, self)
         obj = self.env['odoosh_bi.odoosh_bi'].sudo().search([('id', '=', self.id)])
-        print(obj)
+        # print(obj)
         updated_vals = {
             'db_name': obj.db_name,
             'db_user_name': obj.db_user_name,

@@ -1,23 +1,56 @@
 <odoo>
   <data>
 
-    <record model="ir.ui.view" id="odoosh_bi.list">
+    <record model="ir.ui.view" id="odoosh_bi_formview">
+      <field name="name">BI Connector(SH)</field>
+      <field name="model">odoosh_bi.odoosh_bi</field>
+      <field name="arch" type="xml">
+        <form>  
+          <sheet>
+            <group>
+              <group>
+                <field name="db_host" required='True'/>
+                <field name="db_user_name" required='True' />
+                <field name="db_password" required='True' password="True"/>
+                <field name="db_name" required='True'/>
+                <field name="db_port" required='True'/>
+                <field name="db_file" required='True'/>
+                <field name="db_name_for_backup" required='True'/>
+                <!-- <label for="runButton" 
+                        string="Script is running in the backgound, it will take average 30 mins" 
+                        attrs="{'invisible':[('blockFlag','=',False)]}"
+                        style="color:Red;"/> -->
+                <button name="run_script" id='runButton' string="Start" type="object" class="oe_highlight"/>
+                      <!-- attrs="{'invisible':[('blockFlag','=',True)]}"/> -->
+              </group>
+              <!-- <group>
+                <field name="last_updated_RDS" readonly='True' />
+                <field name="Logs" /> 
+                <field name="blockFlag" invisible='True'/>
+                <label for="" string="Make Sure Data Uploading is Finished, before restarting the script" attrs="{'invisible':[('blockFlag','=',True)]}"/>
+              </group>-->
+            </group> 
+          </sheet>
+          <!-- <sheet style="height:110px;width:auto;autoScroll:true;">
+            <group>
+                <field name="logs" readonly='True' style=' max-width: 1150px;  width: 500px'/>
+                <field name="blockFlag"/>
+            </group>
+          </sheet> -->
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="odoosh_bi_treeview">
       <field name="name">BI Connector(SH)</field>
       <field name="model">odoosh_bi.odoosh_bi</field>
       <field name="arch" type="xml">
         <tree>
-          <field name="db_host"/>
-          <field name="db_user_name"/>
-          <field name="db_password"/>
-          <field name="db_name"/>
-          <field name="db_port"/>
-          <field name="db_file"/>
-          <field name="db_name_for_backup"/>
-          <button name="run_script" string="Start" type="object" class="oe_highlight"
-              attrs="{'invisible':[('blockFlag','=',True)]}"/>
-          <field name="last_updated_RDS"/>
-          <field name="Logs"/>
-          <field name="blockFlag"/>
+          <field name="db_host" required='True'/>
+          <field name="db_user_name" required='True'/>
+          <field name="db_file" required='True'/>
+          <field name="db_name_for_backup" required='True'/>
+          <field name="last_updated_RDS" />
         </tree>
       </field>
     </record>
