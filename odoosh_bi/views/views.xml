@@ -1,0 +1,84 @@
+<odoo>
+  <data>
+
+    <record model="ir.ui.view" id="odoosh_bi_formview">
+      <field name="name">BI Connector(SH)</field>
+      <field name="model">odoosh_bi.odoosh_bi</field>
+      <field name="arch" type="xml">
+        <form>  
+          <sheet>
+            <group>
+              <group>
+                <field name="db_host" required='True'/>
+                <field name="db_user_name" required='True' />
+                <field name="db_password" required='True' password="True"/>
+                <field name="db_name" required='True'/>
+                <field name="db_port" required='True'/>
+                <field name="db_file" required='True'/>
+                <field name="db_name_for_backup" required='True'/>
+                <!-- <label for="runButton" 
+                        string="Script is running in the backgound, it will take average 30 mins" 
+                        attrs="{'invisible':[('blockFlag','=',False)]}"
+                        style="color:Red;"/> -->
+                <button name="run_script" id='runButton' string="Start" type="object" class="oe_highlight"/>
+                      <!-- attrs="{'invisible':[('blockFlag','=',True)]}"/> -->
+              </group>
+              <!-- <group>
+                <field name="last_updated_RDS" readonly='True' />
+                <field name="Logs" /> 
+                <field name="blockFlag" invisible='True'/>
+                <label for="" string="Make Sure Data Uploading is Finished, before restarting the script" attrs="{'invisible':[('blockFlag','=',True)]}"/>
+              </group>-->
+            </group> 
+          </sheet>
+          <!-- <sheet style="height:110px;width:auto;autoScroll:true;">
+            <group>
+                <field name="logs" readonly='True' style=' max-width: 1150px;  width: 500px'/>
+                <field name="blockFlag"/>
+            </group>
+          </sheet> -->
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="odoosh_bi_treeview">
+      <field name="name">BI Connector(SH)</field>
+      <field name="model">odoosh_bi.odoosh_bi</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="db_host" required='True'/>
+          <field name="db_user_name" required='True'/>
+          <field name="db_file" required='True'/>
+          <field name="db_name_for_backup" required='True'/>
+          <field name="last_updated_RDS" />
+        </tree>
+      </field>
+    </record>
+
+
+    <record model="ir.actions.act_window" id="odoosh_bi.action_window">
+      <field name="name">odoosh_bi window</field>
+      <field name="res_model">odoosh_bi.odoosh_bi</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <!-- server action to the one above -->
+
+    <record model="ir.actions.server" id="odoosh_bi.action_server">
+      <field name="name">BI Connector(SH) server</field>
+      <field name="model_id" ref="model_odoosh_bi_odoosh_bi"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+
+    <menuitem name="BI Connector(SH)" id="odoosh_bi.menu_root" action="odoosh_bi.action_window"/>
+
+  </data>
+</odoo>
